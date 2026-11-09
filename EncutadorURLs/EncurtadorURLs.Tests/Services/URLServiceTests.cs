@@ -8,7 +8,7 @@ namespace EncurtadorURLs.Tests.Services;
 
 /// <summary>
 /// Testes unitários para UrlsService.CreateShortUrlAsync.
-/// FASE RED do TDD: estes testes foram escritos ANTES da implementação existir.
+/// FASE RED do TDD: testes escritos ANTES da implementação existir.
 /// Todos devem FALHAR neste momento — isso é o esperado e desejado.
 /// </summary>
 public class UrlsServiceTests
@@ -37,6 +37,9 @@ public class UrlsServiceTests
         Assert.NotNull(resultado);
         Assert.Equal(urlOriginal, resultado.OriginalUrl);
         Assert.False(string.IsNullOrEmpty(resultado.ShortCode));
+
+        // Item 3: Verifica se o método AddAsync foi chamado exatamente uma vez
+        _mockContext.Verify(c => c.AddAsync(It.IsAny<UrlItem>()), Times.Once);
     }
 
     [Fact]
@@ -45,6 +48,27 @@ public class UrlsServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
             () => _service.CreateShortUrlAsync(string.Empty)
+        );
+    }
+
+    [Fact]
+    public async Task CreateShortUrlAsync_ComUrlNula_DeveLancarArgumentException()
+    {
+        // Item 1: Act & Assert para URL nula
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.CreateShortUrlAsync(null!)
+        );
+    }
+
+    [Fact]
+    public async Task CreateShortUrlAsync_ComUrlMuitoLonga_DeveLancarArgumentException()
+    {
+        // Item 2: Arrange com URL > 2048 caracteres
+        var urlMuitoLonga = "https://exemplo.com/" + new string('a', 2100);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.CreateShortUrlAsync(urlMuitoLonga)
         );
     }
 
